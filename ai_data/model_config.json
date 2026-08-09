@@ -1,0 +1,13 @@
+{
+  "vocabSize": 1107,
+  "dim": 384,
+  "numLayers": 12,
+  "numHeads": 8,
+  "maxLen": 256,
+  "hiddenDim": 1536,
+  "modelType": "minigpt-v1-split",
+  "version": "1.0",
+  "quantized": true,
+  "quantBits": 8,
+  "splitFiles": true
+}
