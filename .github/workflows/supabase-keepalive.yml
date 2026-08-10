@@ -1,0 +1,31 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # 每天 UTC 02:00（北京时间 10:00）执行
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Insert keep-alive row
+        run: |
+          curl -s -X POST "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/keepalive" \
+            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d '{"source": "github-actions", "note": "prevent auto-pause"}'
+
+      - name: Cleanup old rows (keep last 30)
+        run: |
+          # 获取30天前的时间戳
+          CUTOFF=$(date -u -d '30 days ago' '+%Y-%m-%dT%H:%M:%SZ')
+          curl -s -X DELETE "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/keepalive?created_at=lt.${CUTOFF}" \
+            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_ANON_KEY }}"
+
+      - name: Log result
+        run: echo "Supabase keep-alive ping sent at $(date -u)"
